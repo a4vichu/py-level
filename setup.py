@@ -1,0 +1,44 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="pylevelframework",
+    version="0.1.0",
+    description="A Python web framework inspired by Laravel",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    author="PyLevel Team",
+    author_email="author@pylevel.com",
+    url="https://github.com/yourusername/pylevelframework",
+    packages=find_packages(exclude=["tests*"]),
+    include_package_data=True,
+    python_requires=">=3.7",
+    install_requires=[
+        "fastapi>=0.68.0",
+        "uvicorn>=0.15.0",
+        "python-dotenv>=0.19.0",
+        "click>=8.0.0",
+        "jinja2>=3.0.0",
+        "sqlalchemy>=1.4.0",
+        "alembic>=1.7.0",
+        "pydantic>=1.8.0",
+        "requests>=2.26.0",
+        "aiofiles>=0.7.0",
+    ],
+    entry_points={
+        "console_scripts": [
+            "pylevel=pylevelframework.cli:main",
+        ],
+    },
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Framework :: FastAPI",
+        "Topic :: Software Development :: Libraries :: Application Frameworks",
+    ],
+) 

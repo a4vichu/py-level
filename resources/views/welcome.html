@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #ff0000;
+            --primary-dark: #cc0000;
+            --primary-light: #ff3333;
+            --code-red: rgba(255, 80, 80, 0.95);
+            --white: #ffffff;
+            --black: #000000;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            line-height: 1.6;
+            background-color: var(--white);
+            color: var(--white);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .hero-section {
+            background: linear-gradient(-45deg, var(--primary-red), var(--primary-dark), var(--primary-light));
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.1;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -5vw;
+            left: 0;
+            width: 100%;
+            height: 10vw;
+            background-color: var(--white);
+            border-radius: 100% 100% 0 0;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            padding: 0 2rem;
+        }
+
+        .hero-content {
+            position: relative;
+            max-width: 600px;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .hero-badge {
+            background: var(--glass-bg);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .hero-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-badge::before {
+            content: '✨';
+            font-size: 1.2rem;
+        }
+
+        .logo {
+            font-size: clamp(3.5rem, 6vw, 6rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            background: linear-gradient(45deg, var(--white) 30%, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            text-shadow: var(--text-shadow);
+            animation: logoFloat 6s ease-in-out infinite;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(to right, var(--white), transparent);
+            border-radius: 2px;
+        }
+
+        .hero-text {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 1.2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .tech-item {
+            background: var(--glass-bg);
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .tech-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .tech-item::after {
+            content: '→';
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .code-display {
+            position: relative;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            line-height: 1.6;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            backdrop-filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .code-display::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.03),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: lightSweep 10s linear infinite;
+        }
+
+        @keyframes lightSweep {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .code-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem 1rem 0 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .window-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-red);
+        }
+
+        .window-btn:nth-child(2) { background: #ffbd2e; }
+        .window-btn:nth-child(3) { background: #28c941; }
+
+        .code-content {
+            margin-top: 2rem;
+        }
+
+        .code-line {
+            margin: 0.5rem 0;
+            opacity: 0.9;
+            white-space: pre;
+            font-size: clamp(0.8rem, 1.5vw, 1rem);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            color: #fff;
+        }
+
+        .code-line .keyword { color: #ff79c6; }
+        .code-line .class { color: #8be9fd; }
+        .code-line .string { color: #f1fa8c; }
+        .code-line .comment { color: #6272a4; }
+
+        .indent-1 { padding-left: 2rem; }
+        .indent-2 { padding-left: 4rem; }
+        .indent-3 { padding-left: 6rem; }
+
+        .features {
+            background-color: var(--white);
+            padding: 8rem 2rem 4rem;
+            position: relative;
+            z-index: 2;
+            margin-top: -5vw;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(to bottom, rgba(255,0,0,0.05), transparent);
+        }
+
+        .features-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            padding: 0 1rem;
+        }
+
+        .feature-card {
+            position: relative;
+            background: rgba(255,255,255,0.95);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            color: var(--primary-red);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,0,0,0.05), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-red);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.2) rotate(360deg);
+        }
+
+        .feature-icon::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 50%;
+            z-index: -1;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover .feature-icon::after {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-red);
+            position: relative;
+            display: inline-block;
+        }
+
+        .feature-card h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary-red), var(--primary-light));
+            border-radius: 2px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 968px) {
+            .hero-section {
+                padding: 8rem 1.5rem;
+            }
+
+            .container {
+                gap: 4rem;
+            }
+
+            .tech-stack {
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .tech-item {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .feature-card {
+                padding: 2rem;
+                min-height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .feature-card {
+                min-height: auto;
+                padding: 2rem;
+            }
+        }
+
+        .nav-links {
+            display: none;
+        }
+
+        ::selection {
+            background: var(--primary-light);
+            color: var(--white);
+        }
+
+        .donation-section {
+            background: #F8F9FF;
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .donation-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .donation-badge {
+            background: #ff0000;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            color: white;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .donation-title {
+            color: #1a202c;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .donation-description {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .donation-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        .donation-heart {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .donation-message {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .donate-button {
+            background: #ff0000;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+        }
+
+        .donate-button:hover {
+            background: #e60000;
+            transform: translateY(-2px);
+        }
+
+        .community-count {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .payment-methods {
+            margin-top: 2rem;
+            opacity: 0.7;
+        }
+
+        .payment-methods img {
+            height: 20px;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .donation-section {
+                padding: 4rem 1rem;
+            }
+
+            .donation-card {
+                padding: 2rem;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .donation-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .amount-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .amount-option {
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .amount-option:hover {
+            border-color: #ff0000;
+        }
+
+        .amount-option.selected {
+            border-color: #ff0000;
+            background: #fff5f5;
+        }
+
+        .amount-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .custom-amount {
+            margin-top: 1rem;
+        }
+
+        .custom-amount input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .custom-amount input:focus {
+            border-color: #ff0000;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #ff0000;
+        }
+
+        .payment-option.selected {
+            border-color: #ff0000;
+            background: #fff5f5;
+        }
+
+        .payment-option img {
+            height: 24px;
+            width: auto;
+        }
+
+        .submit-donation {
+            background: #ff0000;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .submit-donation:hover {
+            background: #e60000;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const donateButton = document.querySelector('.donate-button');
+            const modal = document.querySelector('.modal');
+            const closeModal = document.querySelector('.close-modal');
+            const amountOptions = document.querySelectorAll('.amount-option');
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            const customAmountInput = document.querySelector('#customAmount');
+            const donationForm = document.querySelector('.donation-form');
+
+            donateButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                modal.classList.add('active');
+            });
+
+            closeModal.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+
+            amountOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    amountOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    customAmountInput.value = '';
+                });
+            });
+
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            donationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Here you would integrate with your payment processor
+                alert('Thank you for your donation! You will be redirected to complete the payment.');
+            });
+        });
+    </script>
+</head>
+<body>
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">Modern Python Framework</div>
+                <h1 class="logo">PY Level</h1>
+                <p class="hero-text">{{ welcome_message }}</p>
+                <div class="tech-stack">
+                    <div class="tech-item">🐍 Python</div>
+                    <div class="tech-item">⚡ FastAPI</div>
+                    <div class="tech-item">🗄️ SQLite</div>
+                    <div class="tech-item">📡 Kafka</div>
+                    <div class="tech-item">🔌 WebSocket</div>
+                </div>
+            </div>
+            <div class="code-display">
+                <div class="code-header">
+                    <div class="window-btn"></div>
+                    <div class="window-btn"></div>
+                    <div class="window-btn"></div>
+                </div>
+                <div class="code-content">
+                    <div class="code-line"><span class="keyword">from</span> abc <span class="keyword">import</span> ABC, abstractmethod</div>
+                    <div class="code-line"><span class="keyword">from</span> core.foundation.application <span class="keyword">import</span> Application</div>
+                    <div class="code-line">&nbsp;</div>
+                    <div class="code-line"><span class="keyword">class</span> <span class="class">ServiceProvider</span>(ABC):</div>
+                    <div class="code-line indent-1"><span class="keyword">def</span> __init__(self):</div>
+                    <div class="code-line indent-2">self.app = None</div>
+                    <div class="code-line indent-1"><span class="keyword">def</span> register(self, app: Application):</div>
+                    <div class="code-line indent-2"><span class="string">"Register the service provider"</span></div>
+                    <div class="code-line indent-2">self.app = app</div>
+                    <div class="code-line indent-2">self._register()</div>
+                    <div class="code-line">&nbsp;</div>
+                    <div class="code-line indent-1"><span class="keyword">def</span> boot(self, app: Application):</div>
+                    <div class="code-line indent-2"><span class="string">"Boot the service provider"</span></div>
+                    <div class="code-line indent-2">self.app = app</div>
+                    <div class="code-line indent-2">self._boot()</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3>Fast Development</h3>
+                <p>Build and deploy applications quickly with our intuitive framework and extensive toolset.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Secure by Default</h3>
+                <p>Built-in security features and best practices to keep your applications protected.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>High Performance</h3>
+                <p>Optimized for speed with async support and efficient resource management.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔌</div>
+                <h3>Easy Integration</h3>
+                <p>Seamlessly integrate with existing systems and third-party services.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Real-time Capable</h3>
+                <p>Built-in WebSocket support for real-time applications and live updates.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Developer Friendly</h3>
+                <p>Comprehensive documentation, debugging tools, and developer utilities included.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="donation-section">
+        <div class="donation-container">
+            <span class="donation-badge">Support Open Source</span>
+            <h2 class="donation-title">Support Our Community</h2>
+            <p class="donation-description">Help us keep this framework free and open source for everyone. Your contribution makes a difference.</p>
+            
+            <div class="donation-card">
+                <div class="donation-heart">❤️</div>
+                <p class="donation-message">Every contribution helps us maintain and improve the framework. Join our amazing community of supporters!</p>
+                <a href="#" class="donate-button">Make a Donation</a>
+                <div class="community-count">Joined by 2,500+ supporters worldwide</div>
+            </div>
+
+            <div class="payment-methods">
+                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/visa.svg" alt="Visa">
+                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mastercard.svg" alt="Mastercard">
+                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/applepay.svg" alt="Apple Pay">
+                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/googlepay.svg" alt="Google Pay">
+            </div>
+        </div>
+    </section>
+
+    <nav class="nav-links">
+        <a p-for="link in links" href="{{ link.url }}">{{ link.text }}</a>
+    </nav>
+
+    <div class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: #1a202c;">Make a Donation</h3>
+            
+            <form class="donation-form">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: #4a5568; font-weight: 500;">Choose Amount</label>
+                    <div class="amount-options">
+                        <div class="amount-option">
+                            <div class="amount-value">$5</div>
+                        </div>
+                        <div class="amount-option">
+                            <div class="amount-value">$10</div>
+                        </div>
+                        <div class="amount-option">
+                            <div class="amount-value">$20</div>
+                        </div>
+                    </div>
+                    <div class="custom-amount">
+                        <input type="number" id="customAmount" placeholder="Custom amount" min="1" step="1">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; color: #4a5568; font-weight: 500;">Payment Method</label>
+                    <div class="payment-options">
+                        <div class="payment-option">
+                            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg" alt="Credit Card">
+                            <span>Credit Card</span>
+                        </div>
+                        <div class="payment-option">
+                            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/paypal.svg" alt="PayPal">
+                            <span>PayPal</span>
+                        </div>
+                        <div class="payment-option">
+                            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/bitcoin.svg" alt="Crypto">
+                            <span>Cryptocurrency</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-donation">Complete Donation</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 

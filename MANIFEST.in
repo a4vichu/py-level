@@ -1,0 +1,9 @@
+include LICENSE
+include README.md
+include COMMANDS.md
+include FOLDER_STRUCTURE.md
+recursive-include pylevelframework/resources *
+recursive-include pylevelframework/templates *
+recursive-include docs *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co] 
