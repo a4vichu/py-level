@@ -5,6 +5,7 @@ import json
 T = TypeVar('T', bound='Model')
 
 class Model:
+    # Default values that can be overridden by @model decorator
     _table: str = ''
     _primary_key: str = 'id'
     _fillable: List[str] = []
@@ -16,8 +17,16 @@ class Model:
         self._original: Dict[str, Any] = {}
         self._exists: bool = False
         
+        # Set timestamps if enabled
+        if 'created_at' in self._casts and 'created_at' not in kwargs:
+            kwargs['created_at'] = datetime.utcnow()
+        if 'updated_at' in self._casts and 'updated_at' not in kwargs:
+            kwargs['updated_at'] = datetime.utcnow()
+        
+        # Only set fillable attributes if specified
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            if not self._fillable or key in self._fillable:
+                setattr(self, key, value)
             
     def __getattr__(self, name: str) -> Any:
         if name in self._attributes:
@@ -34,11 +43,11 @@ class Model:
         if name in self._casts:
             cast_type = self._casts[name]
             if cast_type == 'int':
-                return int(value)
+                return int(value) if value is not None else None
             elif cast_type == 'float':
-                return float(value)
+                return float(value) if value is not None else None
             elif cast_type == 'bool':
-                return bool(value)
+                return bool(value) if value is not None else None
             elif cast_type == 'datetime':
                 return datetime.fromisoformat(value) if isinstance(value, str) else value
             elif cast_type == 'json':
@@ -59,8 +68,15 @@ class Model:
         
     def save(self) -> bool:
         """Save the model to the database"""
+        # Update timestamps if enabled
+        if 'updated_at' in self._casts:
+            self.updated_at = datetime.utcnow()
+            
         if self._exists:
             return self._update()
+        
+        if 'created_at' in self._casts:
+            self.created_at = datetime.utcnow()
         return self._insert()
         
     def _insert(self) -> bool:
@@ -85,7 +101,7 @@ class Model:
         attributes = {}
         for key, value in self._attributes.items():
             if key not in self._hidden:
-                attributes[key] = value
+                attributes[key] = self._cast_attribute(key, value)
         return attributes
         
     def to_json(self) -> str:

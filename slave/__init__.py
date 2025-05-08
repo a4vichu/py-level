@@ -1,5 +1,5 @@
 """
-Slave Server - A Python-based command-line server with controller management
+Slave Server - A Python-based command-line server with model, controller, and migration management
 """
 
 __version__ = '1.0.0'
@@ -9,7 +9,9 @@ from .cli import cli
 from .config import Config
 from .process import SlaveProcess
 from .controllers import create_controller, list_controllers, remove_controller
-from .helpers import view
+from .models import create_model
+from .migrations import create_migration
+from .helpers import view, dump
 
 __all__ = [
     'cli',
@@ -18,5 +20,8 @@ __all__ = [
     'create_controller',
     'list_controllers',
     'remove_controller',
-    'view'
+    'create_model',
+    'create_migration',
+    'view',
+    'dump'
 ] 

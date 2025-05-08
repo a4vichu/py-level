@@ -1,13 +1,17 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from abc import ABC, abstractmethod
 import json
+from core.http import Request
 
 class Controller(ABC):
+    """Base controller class"""
+    
     def __init__(self):
         self._middleware = []
+        self.request: Request = None
         
     def middleware(self, middleware: Any):
-        """Register middleware for the controller"""
+        """Add middleware to the controller"""
         self._middleware.append(middleware)
         return self
         
@@ -18,21 +22,25 @@ class Controller(ABC):
             'data': data
         }
         
-    def success(self, data: Any = None, message: str = 'Success') -> Dict[str, Any]:
+    def success(self, data: Any = None, message: str = None, status: int = 200) -> Dict[str, Any]:
         """Return a success response"""
-        return self.json({
-            'success': True,
-            'message': message,
+        response = {
+            'status': 'success',
             'data': data
-        })
+        }
+        if message:
+            response['message'] = message
+        return response
         
-    def error(self, message: str, status: int = 400, data: Any = None) -> Dict[str, Any]:
+    def error(self, message: str, status: int = 400, errors: List[str] = None) -> Dict[str, Any]:
         """Return an error response"""
-        return self.json({
-            'success': False,
-            'message': message,
-            'data': data
-        }, status)
+        response = {
+            'status': 'error',
+            'message': message
+        }
+        if errors:
+            response['errors'] = errors
+        return response
         
     def not_found(self, message: str = 'Resource not found') -> Dict[str, Any]:
         """Return a not found response"""
@@ -46,35 +54,29 @@ class Controller(ABC):
         """Return a forbidden response"""
         return self.error(message, 403)
         
-    def validate(self, data: Dict[str, Any], rules: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Validate request data"""
-        errors = {}
-        
+    def validate(self, data: Dict[str, Any], rules: Dict[str, Any]) -> List[str]:
+        """Validate request data against rules"""
+        errors = []
         for field, rule in rules.items():
-            if field not in data and 'required' in rule:
-                errors[field] = f"{field} is required"
-            elif field in data:
-                value = data[field]
-                
-                if 'type' in rule:
-                    if rule['type'] == 'string' and not isinstance(value, str):
-                        errors[field] = f"{field} must be a string"
-                    elif rule['type'] == 'integer' and not isinstance(value, int):
-                        errors[field] = f"{field} must be an integer"
-                    elif rule['type'] == 'float' and not isinstance(value, float):
-                        errors[field] = f"{field} must be a float"
-                    elif rule['type'] == 'boolean' and not isinstance(value, bool):
-                        errors[field] = f"{field} must be a boolean"
-                        
-                if 'min' in rule and value < rule['min']:
-                    errors[field] = f"{field} must be at least {rule['min']}"
-                    
-                if 'max' in rule and value > rule['max']:
-                    errors[field] = f"{field} must be at most {rule['max']}"
-                    
-                if 'in' in rule and value not in rule['in']:
-                    errors[field] = f"{field} must be one of {rule['in']}"
-                    
-        if errors:
-            return self.error('Validation failed', 422, errors)
-        return None 
+            if field not in data:
+                errors.append(f"{field} is required")
+            elif not rule(data[field]):
+                errors.append(f"{field} is invalid")
+        return errors
+
+    def __call__(self, request: Request, **kwargs) -> Any:
+        """Handle the request and execute the controller method"""
+        self.request = request
+        method_name = request.method.lower()
+        
+        # Get the method to call
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
+            return method(**kwargs)
+            
+        # If no method found, try to get the action from the route
+        action = getattr(self, request.path.split('/')[-1], None)
+        if action:
+            return action(**kwargs)
+            
+        raise AttributeError(f"Method {method_name} not found in {self.__class__.__name__}") 

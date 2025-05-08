@@ -48,8 +48,16 @@ class Response:
         return response_dict
         
     def to_json(self) -> str:
-        """Convert the response to a JSON string"""
-        return json.dumps(self.to_dict())
+        """Convert the response to a JSON string with robust serialization"""
+        def json_serial(obj):
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            if hasattr(obj, 'to_dict'):
+                return obj.to_dict()
+            if hasattr(obj, '__dict__'):
+                return obj.__dict__
+            return str(obj)
+        return json.dumps(self.to_dict(), default=json_serial)
 
 class ResponseValidator:
     @staticmethod

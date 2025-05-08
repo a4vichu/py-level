@@ -7,6 +7,7 @@ from .process import SlaveProcess
 from .config import Config
 from .exceptions import SlaveProcessError
 from .server import RouterServer
+from .live_reload import LiveReload
 
 # Configure logging
 logging.basicConfig(
@@ -86,6 +87,21 @@ def restart():
     logger.info(f"Restarting server on {host}:{port} with {workers} workers")
     asyncio.run(process.start())
 
+@cli.command()
+@click.option('--watch', multiple=True, help='Paths to watch for changes')
+def dev(watch):
+    """Start the slave server with live reload"""
+    try:
+        # If no watch paths specified, watch the current directory
+        watch_paths = watch if watch else ['.']
+        
+        # Start live reload
+        live_reload = LiveReload(watch_paths=watch_paths)
+        live_reload.start()
+    except Exception as e:
+        logger.error(f"Failed to start development server: {str(e)}")
+        raise click.ClickException(str(e))
+
 # Controller Commands
 @cli.group()
 def make():
@@ -132,6 +148,86 @@ def remove_controller(name: str):
         logger.info(f"Removed controller: {name}")
     except Exception as e:
         logger.error(f"Failed to remove controller: {str(e)}")
+        raise click.ClickException(str(e))
+
+@cli.command('make:model')
+@click.argument('name')
+@click.option('-m', '--migration', is_flag=True, help='Create a migration file')
+@click.option('-c', '--controller', is_flag=True, help='Create a controller')
+def make_model(name: str, migration: bool, controller: bool):
+    """Create a new model with optional migration and controller"""
+    try:
+        # Import here to avoid circular imports
+        from .models import create_model
+        from .controllers import create_controller
+        from .migrations import create_migration
+        
+        # Create the model
+        create_model(name)
+        logger.info(f"Created model: {name}")
+        
+        # Create migration if requested
+        if migration:
+            create_migration(name)
+            logger.info(f"Created migration for model: {name}")
+            
+        # Create controller if requested
+        if controller:
+            create_controller(name, ['get', 'post', 'put', 'delete'])
+            logger.info(f"Created controller for model: {name}")
+            
+    except Exception as e:
+        logger.error(f"Failed to create model components: {str(e)}")
+        raise click.ClickException(str(e))
+
+@cli.command('make:request')
+@click.argument('name')
+def make_request(name: str):
+    """Create a new form request class"""
+    try:
+        # Convert name to proper format
+        name = name.replace('-', '_').replace(' ', '_')
+        class_name = ''.join(word.capitalize() for word in name.split('_'))
+        if not class_name.endswith('Request'):
+            class_name += 'Request'
+
+        # Create the request file
+        request_path = os.path.join('app', 'requests', f"{name}.py")
+        os.makedirs(os.path.dirname(request_path), exist_ok=True)
+
+        template = f'''from core.http.request import Request
+
+class {class_name}(Request):
+    """
+    Form request for {name}
+    """
+    def rules(self):
+        return {{
+            # Define your validation rules here
+            # Example:
+            # 'email': ['required', 'email'],
+            # 'password': ['required', 'string', 'min:8'],
+        }}
+
+    def messages(self):
+        return {{
+            # Define your custom error messages here
+            # Example:
+            # 'email.required': 'Please provide your email address',
+            # 'password.min': 'Password must be at least 8 characters',
+        }}
+
+    def authorize(self):
+        return True
+'''
+
+        with open(request_path, 'w') as f:
+            f.write(template)
+
+        logger.info(f"Created request class: {request_path}")
+        click.echo(f"Request class created successfully: {request_path}")
+    except Exception as e:
+        logger.error(f"Failed to create request class: {str(e)}")
         raise click.ClickException(str(e))
 
 # Configuration Commands
@@ -222,6 +318,63 @@ def process_list():
         # Add actual worker listing logic here
     except Exception as e:
         logger.error(f"Failed to list workers: {str(e)}")
+        raise click.ClickException(str(e))
+
+@cli.command('migrate')
+@click.option('--force', is_flag=True, help='Force the operation to run in production')
+@click.option('--database', default=None, help='Database connection to use')
+def migrate(force: bool, database: str):
+    """Run the database migrations"""
+    try:
+        from core.database.migrations import Migration
+        migration = Migration(database)
+        migration.up()
+        logger.info("✓ Migrations completed successfully")
+    except Exception as e:
+        logger.error(f"Failed to run migrations: {str(e)}")
+        raise click.ClickException(str(e))
+
+@cli.command('migrate:refresh')
+@click.option('--force', is_flag=True, help='Force the operation to run in production')
+@click.option('--database', default=None, help='Database connection to use')
+def migrate_refresh(force: bool, database: str):
+    """Refresh all migrations by rolling back and re-running them"""
+    try:
+        from core.database.migrations import Migration
+        migration = Migration(database)
+        migration.refresh()
+        logger.info("✓ Migrations refreshed successfully")
+    except Exception as e:
+        logger.error(f"Failed to refresh migrations: {str(e)}")
+        raise click.ClickException(str(e))
+
+@cli.command('migrate:rollback')
+@click.option('--steps', default=1, help='Number of migrations to rollback')
+@click.option('--force', is_flag=True, help='Force the operation to run in production')
+@click.option('--database', default=None, help='Database connection to use')
+def migrate_rollback(steps: int, force: bool, database: str):
+    """Rollback the last N migrations"""
+    try:
+        from core.database.migrations import Migration
+        migration = Migration(database)
+        migration.rollback(steps)
+        logger.info(f"✓ Rolled back {steps} migration(s) successfully")
+    except Exception as e:
+        logger.error(f"Failed to rollback migrations: {str(e)}")
+        raise click.ClickException(str(e))
+
+@cli.command('migrate:fresh')
+@click.option('--force', is_flag=True, help='Force the operation to run in production')
+@click.option('--database', default=None, help='Database connection to use')
+def migrate_fresh(force: bool, database: str):
+    """Drop all tables and re-run all migrations"""
+    try:
+        from core.database.migrations import Migration
+        migration = Migration(database)
+        migration.fresh()
+        logger.info("✓ Database refreshed successfully")
+    except Exception as e:
+        logger.error(f"Failed to refresh database: {str(e)}")
         raise click.ClickException(str(e))
 
 if __name__ == '__main__':

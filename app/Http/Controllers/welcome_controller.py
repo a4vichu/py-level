@@ -1,5 +1,5 @@
 from core.http.controllers.controller import Controller
-from slave import view
+from slave import view, dump
 
 class WelcomeController(Controller):
     def index(self):

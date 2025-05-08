@@ -37,12 +37,12 @@ class RouterHandler(SimpleHTTPRequestHandler):
 
             # Create and set current request
             request = Request(
-                app=self.app,
+                app=self.app,  # Add app instance
                 method='GET',
                 path=path,
                 headers=dict(self.headers)
             )
-            request.set_current()
+            request.set_current()  # Set as current request
 
             # Check if this is a static file request
             if path.startswith('/static/'):
@@ -52,12 +52,15 @@ class RouterHandler(SimpleHTTPRequestHandler):
             # Find route
             route = self.router.find_route('GET', path)
             if route:
-                # Execute route action
-                response = route.action()
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.end_headers()
-                self.wfile.write(response.encode('utf-8'))
+                # Execute route action with request
+                response = route.handle(request)
+                if isinstance(response, dict):
+                    self.send_json_response(response)
+                else:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.end_headers()
+                    self.wfile.write(str(response).encode('utf-8'))
                 return
             else:
                 self.send_error(404, "Route not found")
@@ -65,12 +68,12 @@ class RouterHandler(SimpleHTTPRequestHandler):
             logger.error(f"Error handling GET request: {str(e)}")
             self.send_error(500, str(e))
         finally:
-            # Clear current request
             if request:
-                request.clear_current()
+                request.clear_current()  # Clear current request
 
     def do_POST(self):
         """Handle POST requests"""
+        request = None
         try:
             # Parse URL
             parsed_url = urlparse(self.path)
@@ -89,16 +92,29 @@ class RouterHandler(SimpleHTTPRequestHandler):
                 except json.JSONDecodeError:
                     self.send_error(400, "Invalid JSON in request body")
                     return
+
+            # Create request
+            request = Request(
+                app=self.app,  # Add app instance
+                method='POST',
+                path=path,
+                headers=dict(self.headers)
+            )
+            request._json = body if isinstance(body, dict) else {}
+            request.set_current()  # Set as current request
             
             # Find route
             route = self.router.find_route('POST', path)
             if route:
-                # Execute route action
-                response = route.action()
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.end_headers()
-                self.wfile.write(response.encode('utf-8'))
+                # Execute route action with request
+                response = route.handle(request)
+                if isinstance(response, dict):
+                    self.send_json_response(response)
+                else:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.end_headers()
+                    self.wfile.write(str(response).encode('utf-8'))
                 return
 
             # If no route found, send 404
@@ -107,6 +123,9 @@ class RouterHandler(SimpleHTTPRequestHandler):
         except Exception as e:
             logger.error(f"Error handling POST request: {str(e)}")
             self.send_error(500, str(e))
+        finally:
+            if request:
+                request.clear_current()  # Clear current request
 
     def handle_health(self):
         """Handle health check request"""
@@ -201,12 +220,5 @@ class RouterServer:
 
     def start(self):
         """Start the server"""
-        try:
-            logger.info(f"Starting server on {self.host}:{self.port} with {self.workers} workers")
-            self.server.serve_forever()
-        except KeyboardInterrupt:
-            logger.info("Shutting down server")
-            self.server.shutdown()
-        except Exception as e:
-            logger.error(f"Server error: {str(e)}")
-            raise 
+        logger.info(f"Starting server on {self.host}:{self.port} with {self.workers} workers")
+        self.server.serve_forever() 

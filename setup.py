@@ -9,7 +9,7 @@ setup(
     author="PyLevel Team",
     author_email="author@pylevel.com",
     url="https://github.com/yourusername/pylevelframework",
-    packages=find_packages(exclude=["tests*"]),
+    packages=find_packages(include=['core', 'core.*', 'slave', 'slave.*']),
     include_package_data=True,
     python_requires=">=3.7",
     install_requires=[
@@ -23,6 +23,7 @@ setup(
         "pydantic>=1.8.0",
         "requests>=2.26.0",
         "aiofiles>=0.7.0",
+        "bcrypt>=4.0.0",
     ],
     entry_points={
         "console_scripts": [

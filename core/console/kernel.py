@@ -1,6 +1,7 @@
 from typing import Dict, Type, List
 from abc import ABC, abstractmethod
 import sys
+from core.console.commands.make_request import MakeRequestCommand
 
 class Command(ABC):
     @property
@@ -23,6 +24,11 @@ class Command(ABC):
 class ConsoleKernel:
     def __init__(self):
         self._commands: Dict[str, Type[Command]] = {}
+        self._register_default_commands()
+        
+    def _register_default_commands(self):
+        """Register default commands"""
+        self.register(MakeRequestCommand)
         
     def register(self, command_class: Type[Command]):
         """Register a command"""

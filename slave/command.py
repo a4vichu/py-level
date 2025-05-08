@@ -3,6 +3,14 @@ from typing import Dict, Any, Set
 from datetime import datetime
 from .exceptions import ValidationError
 from dataclasses import dataclass
+from functools import wraps
+
+def command(func):
+    """Decorator to register a command function"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
 
 @dataclass
 class Command:
@@ -64,3 +72,28 @@ class CommandValidator:
             if not isinstance(e, ValidationError):
                 raise ValidationError(f"Invalid command format: {str(e)}")
             raise 
+
+@command
+def migrate_refresh():
+    """Refresh all migrations by rolling back and re-running them"""
+    from .migrations import refresh_migrations
+    refresh_migrations()
+    print("✓ Migrations refreshed successfully")
+
+@command
+def migrate_rollback(steps: int = 1):
+    """Rollback the last N migrations
+    
+    Args:
+        steps: Number of migrations to rollback (default: 1)
+    """
+    from .migrations import rollback_migrations
+    rollback_migrations(steps)
+    print(f"✓ Rolled back {steps} migration(s) successfully")
+
+@command
+def migrate_fresh():
+    """Drop all tables and re-run all migrations"""
+    from .migrations import fresh_migrations
+    fresh_migrations()
+    print("✓ Database refreshed successfully") 
