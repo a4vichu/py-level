@@ -23,7 +23,7 @@ def create_model(name: str) -> None:
     model_dir.mkdir(parents=True, exist_ok=True)
     
     # Model template with proper string formatting and @model decorator
-    model_template = f"""from core.database import Model
+    model_template = f"""from core.database.orm.model import Model
 from core.database.orm.decorators import model
 from datetime import datetime
 

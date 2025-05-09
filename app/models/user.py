@@ -1,4 +1,4 @@
-from core.database import Model
+from core.database.orm.model import Model
 from core.database.orm.decorators import model
 from core.database.schema import Column, Integer, String, DateTime
 from datetime import datetime

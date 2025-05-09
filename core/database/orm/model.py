@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Type, TypeVar
 from datetime import datetime
 import json
+from core.database.connection import Connection
 
 T = TypeVar('T', bound='Model')
 
@@ -53,18 +54,61 @@ class Model:
             elif cast_type == 'json':
                 return json.loads(value) if isinstance(value, str) else value
         return value
+
+    @classmethod
+    def _get_connection(cls) -> Connection:
+        """Get database connection instance"""
+        return Connection.get_instance()
+
+    @classmethod
+    def _execute_query(cls, query: str, params: tuple = None) -> List[tuple]:
+        """Execute a database query"""
+        connection = cls._get_connection()
+        return connection.execute(query, params)
+
+    @classmethod
+    def _build_select_query(cls, conditions: str = None, params: tuple = None) -> tuple:
+        """Build a SELECT query"""
+        query = f"SELECT * FROM {cls._table}"
+        if conditions:
+            query += f" WHERE {conditions}"
+        return query, params
+
+    @classmethod
+    def _create_instance(cls, row: tuple) -> 'Model':
+        """Create a model instance from a database row"""
+        instance = cls()
+        instance._exists = True
+        for key, value in zip(row.keys(), row):
+            setattr(instance, key, value)
+        return instance
+
+    @classmethod
+    def all(cls: Type[T]) -> List[T]:
+        """Get all records from the table"""
+        query, params = cls._build_select_query()
+        results = cls._execute_query(query, params)
+        return [cls._create_instance(row) for row in results]
         
     @classmethod
     def find(cls: Type[T], id: Any) -> Optional[T]:
         """Find a model by its primary key"""
-        # Implement database query
-        pass
+        query, params = cls._build_select_query(
+            f"{cls._primary_key} = %s",
+            (id,)
+        )
+        results = cls._execute_query(query, params)
+        return cls._create_instance(results[0]) if results else None
         
     @classmethod
     def where(cls: Type[T], column: str, operator: str, value: Any) -> List[T]:
-        """Query the database"""
-        # Implement database query
-        pass
+        """Query the database with conditions"""
+        query, params = cls._build_select_query(
+            f"{column} {operator} %s",
+            (value,)
+        )
+        results = cls._execute_query(query, params)
+        return [cls._create_instance(row) for row in results]
         
     def save(self) -> bool:
         """Save the model to the database"""
@@ -81,18 +125,40 @@ class Model:
         
     def _insert(self) -> bool:
         """Insert the model into the database"""
-        # Implement database insert
+        columns = []
+        values = []
+        params = []
+        
+        for key, value in self._attributes.items():
+            if not self._fillable or key in self._fillable:
+                columns.append(key)
+                values.append('%s')
+                params.append(value)
+        
+        query = f"INSERT INTO {self._table} ({', '.join(columns)}) VALUES ({', '.join(values)})"
+        self._execute_query(query, tuple(params))
         self._exists = True
         return True
         
     def _update(self) -> bool:
         """Update the model in the database"""
-        # Implement database update
+        sets = []
+        params = []
+        
+        for key, value in self._attributes.items():
+            if not self._fillable or key in self._fillable:
+                sets.append(f"{key} = %s")
+                params.append(value)
+        
+        params.append(getattr(self, self._primary_key))
+        query = f"UPDATE {self._table} SET {', '.join(sets)} WHERE {self._primary_key} = %s"
+        self._execute_query(query, tuple(params))
         return True
         
     def delete(self) -> bool:
         """Delete the model from the database"""
-        # Implement database delete
+        query = f"DELETE FROM {self._table} WHERE {self._primary_key} = %s"
+        self._execute_query(query, (getattr(self, self._primary_key),))
         self._exists = False
         return True
         

@@ -108,7 +108,7 @@ def make():
     """Create new components"""
     pass
 
-@make.command('controller')
+@cli.command('make:controller')
 @click.argument('name')
 @click.option('--methods', default='get,post,put,delete', help='HTTP methods to implement')
 def make_controller(name: str, methods: str):

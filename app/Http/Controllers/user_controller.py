@@ -1,3 +1,4 @@
+from app.models.user import User
 from core.http.controllers.controller import Controller
 from typing import Dict, Any, List
 from slave import dump
@@ -9,8 +10,8 @@ class UserController(Controller):
     def index(self):
         """Get all users"""
         try:
-            # TODO: Implement user fetching logic
-            users = []
+            # Get all users using the ORM all() method
+            users = User.all()
             return dump({
                 'status': 'success',
                 'data': users
