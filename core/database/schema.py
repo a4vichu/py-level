@@ -54,7 +54,12 @@ class Boolean: pass
 class JSON: pass
 
 # Enum Type
-class Enum: pass
+class Enum:
+    def __init__(self, *values):
+        self.values = values
+        
+    def __str__(self):
+        return f"ENUM({', '.join(repr(v) for v in self.values)})"
 
 # UUID Type
 class UUID: pass 

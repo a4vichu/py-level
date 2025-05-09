@@ -1,5 +1,5 @@
 from core.database.migrations import Migration
-from core.database.schema import Column, Integer, String, DateTime
+from core.database.schema import Column, Enum, Integer, String, DateTime
 
 class CreateUsersTable(Migration):
     """
@@ -9,6 +9,8 @@ class CreateUsersTable(Migration):
         """Create the table"""
         self.create_table('users', [
             Column('id', Integer, primary_key=True),
+            Column('name', String),
+            Column('status', Enum('active', 'inactive', 'deleted'), default='active'),
             Column('created_at', DateTime),
             Column('updated_at', DateTime)
         ])

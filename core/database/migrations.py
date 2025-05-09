@@ -75,6 +75,9 @@ class Migration:
         
     def _get_type(self, type_class):
         """Convert Python type to database type"""
+        if isinstance(type_class, Enum):
+            return str(type_class)
+            
         type_map = {
             # Numeric Types
             'Integer': 'INTEGER',
@@ -242,11 +245,11 @@ class Migration:
                 migration.dialect = self.dialect
                 migration.up()
                 self._record_migration(migration_name, batch)
-                logger.info(f"✓ Migration completed: {migration_name}")
+                logger.info(f"✅ Migration completed: {migration_name}")
             else:
                 logger.info(f"Migration already run: {migration_name}")
                 
-        logger.info("✓ Migrations completed successfully")
+        logger.info("✅ Migrations completed successfully")
 
     def down(self):
         """Reverse all migrations"""
@@ -256,7 +259,7 @@ class Migration:
             migration.connection = self.connection
             migration.dialect = self.dialect
             migration.down()
-            logger.info(f"✓ Migration reversed: {migration.__class__.__name__}")
+            logger.info(f"✅ Migration reversed: {migration.__class__.__name__}")
 
     def refresh(self):
         """Rollback all migrations and then run them again"""
@@ -306,16 +309,16 @@ class Migration:
                 # Remove the migration record
                 delete_query = "DELETE FROM migrations WHERE migration = %s"
                 self.connection.execute(delete_query, (migration_name,))
-                logger.info(f"✓ Migration rolled back: {migration_name}")
+                logger.info(f"✅ Migration rolled back: {migration_name}")
             else:
-                logger.warning(f"Migration file not found: {migration_name}")
+                logger.warning(f"🚫 Migration file not found: {migration_name}")
                 
-        logger.info(f"✓ Rolled back batch {last_batch} successfully")
+        logger.info(f"✅ Rolled back batch {last_batch} successfully")
 
     def fresh(self):
         """Drop all tables and re-run all migrations"""
         if not self.connection:
-            raise Exception("Database connection not set")
+            raise Exception("❓ Database connection not set")
             
         # Get all tables
         if self.dialect == 'pgsql':
@@ -349,7 +352,7 @@ class Migration:
         # Run all migrations except migrations table creation
         migrations = self._get_migrations()
         if not migrations:
-            logger.info("No migrations to run")
+            logger.info("🤔 No migrations to run")
             return
             
         batch = 1  # First batch
@@ -362,6 +365,6 @@ class Migration:
                 migration.dialect = self.dialect
                 migration.up()
                 self._record_migration(migration_name, batch)
-                logger.info(f"✓ Migration completed: {migration_name}")
+                logger.info(f"✅ Migration completed: {migration_name}")
                 
-        logger.info("✓ Database refreshed successfully") 
+        logger.info("✅ Database refreshed successfully") 
